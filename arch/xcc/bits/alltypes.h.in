@@ -1,0 +1,83 @@
+#define _Addr long long int
+#define _Int64 long long int
+#define _Reg long int
+
+#define __BYTE_ORDER 1234
+
+#ifdef __ILP32__
+#define __LONG_MAX 0x7FFFFFFFL
+#else
+#define __LONG_MAX 0x7FFFFFFFFFFFFFFFL
+#endif
+
+TYPEDEF int wchar_t;
+
+TYPEDEF long double float_t;
+TYPEDEF long double double_t;
+
+TYPEDEF struct { long long int i; long double f; } max_align_t;
+
+#ifndef XCC_VARGS
+#define XCC_VARGS
+
+struct __va_elem { unsigned int gp_offset; unsigned int fp_offset; void *overflow_arg_area; void *reg_save_area; };
+typedef struct __va_elem __builtin_va_list[1];
+
+#define __builtin_va_start(ap,p) __builtin_va_start(ap,&(p))
+#define va_start(ap,p) __builtin_va_start(ap,p)
+#define va_end(ap) __builtin_va_end(ap)
+#define va_arg(ap,ty) __builtin_va_arg(ap,ty)
+#define va_copy(dst,src) __builtin_va_copy(dst,src)
+
+#if defined(__aarch64__)
+#define __GP_REG_ARGS (8)
+#else
+#define __GP_REG_ARGS (6)
+#endif
+#define __FP_REG_ARGS (8)
+#define __WORD_SIZE (8)
+#define __DBL_SIZE (8)
+
+#define __GP_OFFSET_MAX (__GP_REG_ARGS * __WORD_SIZE)
+#define __FP_OFFSET_MAX (__GP_OFFSET_MAX + __FP_REG_ARGS * __DBL_SIZE)
+
+#define __va_arg_mem(ap, sz, align) ({ \
+	unsigned long int p = (unsigned long int)((ap)->overflow_arg_area); \
+	if ((align) > 8) p = (p + 15) / 16 * 16; \
+	(ap)->overflow_arg_area = (void*)((p + (sz) + 7) & -8); \
+	(char*)p; })
+
+#define __va_arg_gp(ap, sz, align) \
+	((ap)->gp_offset < __GP_OFFSET_MAX \
+		? (char*)(ap)->reg_save_area + ((ap)->gp_offset += __WORD_SIZE) - __WORD_SIZE \
+		: __va_arg_mem(ap, sz, align))
+
+#define __va_arg_fp(ap, sz, align) \
+	((ap)->fp_offset < __FP_OFFSET_MAX \
+		? (char*)(ap)->reg_save_area + ((ap)->fp_offset += __DBL_SIZE) - __DBL_SIZE \
+		: __va_arg_mem(ap, sz, align))
+
+#ifndef __NO_FLONUM
+#define __builtin_va_arg_fp_case(ap, ty) \
+	case /*flonum*/ 2: \
+		p = __va_arg_fp(ap, sizeof(ty), _Alignof(ty)); break;
+#else
+#define __builtin_va_arg_fp_case(ap, ty) /*none*/
+#endif
+
+#define __builtin_va_arg(ap, ty) ({ \
+	char *p; \
+	switch (__builtin_type_kind(ty)) { \
+	__builtin_va_arg_fp_case(ap, ty) \
+	case /*fixnum*/ 1: case /*ptr*/ 3: \
+		p = __va_arg_gp(ap, sizeof(ty), _Alignof(ty)); break; \
+	default: \
+		p = __va_arg_mem(ap, sizeof(ty), _Alignof(ty)); break; \
+	} \
+	*(ty *)p; })
+
+#define __builtin_va_copy(dest, src) ((dest)[0] = (src)[0])
+
+#define __builtin_va_end(ap) /* none */
+
+#endif

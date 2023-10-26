@@ -17,8 +17,10 @@ includedir = $(prefix)/include
 libdir = $(prefix)/lib
 syslibdir = /lib
 
+src_dirs = crt crypt ctype dirent env errno fcntl fenv include internal ipc legacy locale malloc misc mman mq multibyte passwd prng regex sched search select setjmp signal stat stdio stdlib string temp termios time unistd
+
 MALLOC_DIR = mallocng
-SRC_DIRS = $(addprefix $(srcdir)/,src/* src/malloc/$(MALLOC_DIR) crt ldso $(COMPAT_SRC_DIRS))
+SRC_DIRS = $(addprefix $(srcdir)/,$(addprefix src/,$(src_dirs)) crt src/malloc/$(MALLOC_DIR) $(COMPAT_SRC_DIRS))
 BASE_GLOBS = $(addsuffix /*.c,$(SRC_DIRS))
 ARCH_GLOBS = $(addsuffix /$(ARCH)/*.[csS],$(SRC_DIRS))
 BASE_SRCS = $(sort $(wildcard $(BASE_GLOBS)))
@@ -64,10 +66,10 @@ ALL_INCLUDES = $(sort $(INCLUDES:$(srcdir)/%=%) $(GENH:obj/%=%) $(ARCH_INCLUDES:
 EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
 EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
 CRT_LIBS = $(addprefix lib/,$(notdir $(CRT_OBJS)))
-STATIC_LIBS = lib/libc.a
+STATIC_LIBS = lib/libc.a lib/crt0.a
 SHARED_LIBS = lib/libc.so
 TOOL_LIBS = lib/musl-gcc.specs
-ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
+ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS)
 ALL_TOOLS = obj/musl-gcc
 
 WRAPCC_GCC = gcc
@@ -165,6 +167,11 @@ lib/libc.so: $(LOBJS) $(LDSO_OBJS)
 lib/libc.a: $(AOBJS)
 	rm -f $@
 	$(AR) rc $@ $(AOBJS)
+	$(RANLIB) $@
+
+lib/crt0.a: $(CRT_OBJS)
+	rm -f $@
+	$(AR) rc $@ $(CRT_OBJS)
 	$(RANLIB) $@
 
 $(EMPTY_LIBS):

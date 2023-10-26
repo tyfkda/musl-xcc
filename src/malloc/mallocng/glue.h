@@ -58,7 +58,6 @@ static inline uint64_t get_random_secret()
 
 #define RDLOCK_IS_EXCLUSIVE 1
 
-__attribute__((__visibility__("hidden")))
 extern int __malloc_lock[1];
 
 #define LOCK_OBJ_DEF \
