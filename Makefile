@@ -19,6 +19,18 @@ syslibdir = /lib
 
 src_dirs = crt crypt ctype dirent env errno fcntl fenv include internal ipc legacy locale malloc misc mman mq multibyte passwd prng regex sched search select setjmp signal stat stdio stdlib string temp termios time unistd
 
+# src以下でコンパイル対象に含まれてないもの：
+# aio
+# complex
+# conf
+# exit
+# ldso
+# linux
+# math
+# network
+# process
+# thread
+
 MALLOC_DIR = mallocng
 SRC_DIRS = $(addprefix $(srcdir)/,$(addprefix src/,$(src_dirs)) crt src/malloc/$(MALLOC_DIR) $(COMPAT_SRC_DIRS))
 BASE_GLOBS = $(addsuffix /*.c,$(SRC_DIRS))
