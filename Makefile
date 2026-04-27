@@ -17,22 +17,21 @@ includedir = $(prefix)/include
 libdir = $(prefix)/lib
 syslibdir = /lib
 
-src_dirs = crt crypt ctype dirent env errno fcntl fenv include internal ipc legacy locale malloc misc mman mq multibyte passwd prng regex sched search select setjmp signal stat stdio stdlib string temp termios time unistd
+src_dirs = crt crypt ctype dirent env errno fcntl fenv include internal ipc legacy locale malloc misc mman mq multibyte passwd prng regex sched search select setjmp signal stat stdio stdlib string temp termios time unistd \
+	aio \
+	conf \
+	exit \
+	linux \
+	math \
+	network \
+	process
 
 # src以下でコンパイル対象に含まれてないもの：
-# aio
 # complex
-# conf
-# exit
-# ldso
-# linux
-# math
-# network
-# process
 # thread
 
 MALLOC_DIR = mallocng
-SRC_DIRS = $(addprefix $(srcdir)/,$(addprefix src/,$(src_dirs)) crt src/malloc/$(MALLOC_DIR) $(COMPAT_SRC_DIRS))
+SRC_DIRS = $(addprefix $(srcdir)/,$(addprefix src/,$(src_dirs)) crt ldso src/malloc/$(MALLOC_DIR) $(COMPAT_SRC_DIRS))
 BASE_GLOBS = $(addsuffix /*.c,$(SRC_DIRS))
 ARCH_GLOBS = $(addsuffix /$(ARCH)/*.[csS],$(SRC_DIRS))
 BASE_SRCS = $(sort $(wildcard $(BASE_GLOBS)))
@@ -58,7 +57,7 @@ LIBCC = -lgcc
 CPPFLAGS =
 CFLAGS =
 CFLAGS_AUTO = -Os -pipe
-CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc 
+CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc
 
 CFLAGS_ALL = $(CFLAGS_C99FSE)
 CFLAGS_ALL += -D_XOPEN_SOURCE=700 -I$(srcdir)/arch/$(ARCH) -I$(srcdir)/arch/generic -Iobj/src/internal -I$(srcdir)/src/include -I$(srcdir)/src/internal -Iobj/include -I$(srcdir)/include

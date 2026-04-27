@@ -3,8 +3,10 @@
 
 #include "../../include/features.h"
 
-#define weak
+#define weak __attribute__((__weak__))
 #define hidden
-#define weak_alias(old, new) static void xxx()
+// #define weak_alias(old, new) static void xxx()
+#define weak_alias(old, new) \
+	extern __typeof(old) new __attribute__((__weak__, __alias__(#old)))
 
 #endif
